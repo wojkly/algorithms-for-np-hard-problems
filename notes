@@ -1,0 +1,14 @@
+wariant 1 - 1 robot -> prosty BFS
+wariant 2 - 2 roboty -> tworzymy graf sytuacji dopuszczalnych i w nim potem BFS
+
+wariant 3 -> wiele robotow, d = 0 (nie moga stanac na tym samym msc)
+
+Program sędziego, uruchamiany następująco:
+
+python3 judge.py plik.in  plik.out  
+
+Wypisuje OK lub informację o błędzie. W terminalu unixowym można też uruchomić program jako:
+
+python3 judge.py plik.in  plik,out  -v
+
+wówczas program pokaże stan planszy po kolejnych ruchach.
