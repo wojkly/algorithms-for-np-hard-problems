@@ -1,3 +1,3 @@
-/home/wojkly/Documents/studia/sem6/toizo2/projekt/cmake-build-debug/CMakeFiles/projekt.dir
-/home/wojkly/Documents/studia/sem6/toizo2/projekt/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/wojkly/Documents/studia/sem6/toizo2/projekt/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+D:/STUDIA/SEMESTR6/toizo2/algorithms-for-np-hard-problems/cmake-build-debug/CMakeFiles/projekt.dir
+D:/STUDIA/SEMESTR6/toizo2/algorithms-for-np-hard-problems/cmake-build-debug/CMakeFiles/edit_cache.dir
+D:/STUDIA/SEMESTR6/toizo2/algorithms-for-np-hard-problems/cmake-build-debug/CMakeFiles/rebuild_cache.dir
