@@ -8,11 +8,11 @@
 #include <string>
 #include <cmath>
 #include <chrono>
-#include <ctime>
+#include <iterator>
+#include <map>
 
 using namespace std;
 
-int VP_SIZE = 0;
 int height = 0;
 int width = 0;
 int HW_mul = 0;
@@ -51,8 +51,10 @@ int ipow(int base, int exp)
 
 int get_index(vector<pair<int, int>> positions) {
     int index = 0;
-    for (int i = 0; i < positions.size(); ++i) {
-        index += ipow(HW_mul, i) * (width * positions[i].first + positions[i].second);
+    int HW_pow = 1;
+    for (auto & position : positions) {
+        index += HW_pow * (width * position.first + position.second);
+        HW_pow *= HW_mul;
     }
     return index;
 }
@@ -124,15 +126,8 @@ int main() {
 //    start_timer();
     HW_mul = height * width;
     HW_mul_sqr = HW_mul * HW_mul;
-    VP_SIZE = ipow(HW_mul, K);
 
     bool board[height][width];
-    bool visited[VP_SIZE];
-    int parent[VP_SIZE];
-    for (int i = 0; i < VP_SIZE; ++i) {
-        visited[i] = false;
-        parent[i] = -1;
-    }
 
 //    end_timer();
 //    cout << "read input" << endl;
@@ -186,19 +181,13 @@ int main() {
 
 //    end_timer();
 //    cout << "COMBINATIONS" << endl;
-    start_timer();
+//    start_timer();
     //
     vector<vector<int>> possible_move_combinations;
-    for (int i = ipow(5, K) - 1; i >= 1; --i) {
+    possible_move_combinations.reserve(ipow(5, K));
+    for (int i = 0; i< ipow(5, K); ++i) {
         possible_move_combinations.push_back(get_move_combination(i));
     }
-
-
-//    vector<vector<int>> possible_move_combinations;
-//    for (int i = 1; i < ipow(5, K); ++i) {
-//        possible_move_combinations.push_back(get_move_combination(i));
-//    }
-    //
 
     pair<int,int> possible_moves[5];
     possible_moves[0] = pair<int,int>(-1,0);
@@ -211,7 +200,8 @@ int main() {
 //    cout << "BFS" << endl;
 //    start_timer();
 //    cout << "starting bfs" << endl;
-    visited[start] = true;
+    map<int, int> parents;
+    parents.emplace(start, -1);
 
     int its = 0;
     bool finish_visited = false;
@@ -225,18 +215,18 @@ int main() {
         }
 
         bool check_next_combination;
+        vector<pair<int, int>> coords = get_positions(cur_pos);
+
         for (auto possible_move_combination: possible_move_combinations) {
             check_next_combination = false;
 
-            vector<pair<int, int>> coords = get_positions(cur_pos);
-
+            vector<pair<int, int>> new_coords;
             // move each robot
             for (int i = 0; i < K; ++i) {
                 pair<int, int> move = possible_moves[possible_move_combination[i]];
-                coords[i].first += move.first;
-                coords[i].second += move.second;
-                new_h = coords[i].first;
-                new_w = coords[i].second;
+                new_coords.emplace_back(coords[i].first + move.first, coords[i].second + move.second);
+                new_h = new_coords[i].first;
+                new_w = new_coords[i].second;
 
                 if (0 <= new_h && new_h < height && 0 <= new_w && new_w < width && board[new_h][new_w]) {
                     check_next_combination = false;
@@ -250,10 +240,9 @@ int main() {
                 continue;
             }
 
-            new_pos = get_index(coords);
-            if (!visited[new_pos] && is_distance_greater(coords)) {
-                parent[new_pos] = cur_pos;
-                visited[new_pos] = true;
+            new_pos = get_index(new_coords);
+            if (parents.find(new_pos) == parents.end() && is_distance_greater(new_coords)) {
+                parents.emplace(new_pos, cur_pos);
                 queue.push(new_pos);
 
                 if (new_pos == finish) {
@@ -278,7 +267,7 @@ int main() {
 //    cout << "getting path" << endl;
     string result[K];
     cur_pos = finish;
-    int next_pos = parent[cur_pos];
+    int next_pos = parents[cur_pos];
     int h_dif, w_dif, total_diff;
 
     while(next_pos != -1) {
@@ -313,7 +302,7 @@ int main() {
 
 //        cout << "cur: " << cur_pos[0] << "," << cur_pos[1] << "next: " << next_pos[0] << "," << next_pos[1] << endl;
         cur_pos = next_pos;
-        next_pos = parent[cur_pos];
+        next_pos = parents[cur_pos];
     }
 
 //    end_timer();
