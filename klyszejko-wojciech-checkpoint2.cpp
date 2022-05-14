@@ -7,6 +7,8 @@
 #include <queue>
 #include <string>
 #include <cmath>
+#include <chrono>
+#include <ctime>
 
 using namespace std;
 
@@ -14,8 +16,22 @@ int VP_SIZE = 0;
 int height = 0;
 int width = 0;
 int HW_mul = 0;
+int HW_mul_sqr = 0;
 int D = 0;
 int K = 0;
+
+chrono::time_point<chrono::system_clock, chrono::duration<double>> start;
+
+void start_timer() {
+    start = chrono::system_clock::now();
+}
+
+void end_timer() {
+    auto end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end-start;
+
+    cout << "elapsed time: " << elapsed_seconds.count() << endl;
+}
 
 int ipow(int base, int exp)
 {
@@ -48,7 +64,7 @@ vector<pair<int, int>> get_positions(int index) {
     while (index > 0) {
         p = index % HW_mul;
         y = p % width;
-        x = (p - y) / height;
+        x = p / width;
 
         positions.emplace_back(x, y);
         index /= HW_mul;
@@ -104,7 +120,10 @@ int main() {
     cin >> tmp;
 //    N = stoi(tmp);
 
+//    cout << "prepare arrays" << endl;
+//    start_timer();
     HW_mul = height * width;
+    HW_mul_sqr = HW_mul * HW_mul;
     VP_SIZE = ipow(HW_mul, K);
 
     bool board[height][width];
@@ -115,6 +134,9 @@ int main() {
         parent[i] = -1;
     }
 
+//    end_timer();
+//    cout << "read input" << endl;
+//    start_timer();
     int start = 0, finish = 0;
 
     for (int i = 0; i < height; ++i) {
@@ -123,9 +145,6 @@ int main() {
             switch (line[j]) {
                 case '#':
                     board[i][j] = false;
-                    break;
-                case '.':
-                    board[i][j] = true;
                     break;
                 case 'a':
                     start += i * width + j;
@@ -144,16 +163,16 @@ int main() {
                     board[i][j] = true;
                     break;
                 case 'c':
-                    start += HW_mul * HW_mul * (i * width + j);
+                    start += HW_mul_sqr * (i * width + j);
                     board[i][j] = true;
                     break;
                 case 'C':
-                    finish += HW_mul * HW_mul * (i * width + j);
+                    finish += HW_mul_sqr * (i * width + j);
                     board[i][j] = true;
                     break;
                 default:
-                    cout << "zly znak";
-                    EXIT_FAILURE;
+                    board[i][j] = true;
+                    break;
             }
         }
     }
@@ -164,10 +183,22 @@ int main() {
     int cur_pos;
     int new_pos, new_w, new_h;
 
+
+//    end_timer();
+//    cout << "COMBINATIONS" << endl;
+    start_timer();
+    //
     vector<vector<int>> possible_move_combinations;
-    for (int i = 1; i < ipow(5, K); ++i) {
+    for (int i = ipow(5, K) - 1; i >= 1; --i) {
         possible_move_combinations.push_back(get_move_combination(i));
     }
+
+
+//    vector<vector<int>> possible_move_combinations;
+//    for (int i = 1; i < ipow(5, K); ++i) {
+//        possible_move_combinations.push_back(get_move_combination(i));
+//    }
+    //
 
     pair<int,int> possible_moves[5];
     possible_moves[0] = pair<int,int>(-1,0);
@@ -176,12 +207,16 @@ int main() {
     possible_moves[3] = pair<int,int>(0,1);
     possible_moves[4] = pair<int,int>(0,0);
 
+//    end_timer();
+//    cout << "BFS" << endl;
+//    start_timer();
 //    cout << "starting bfs" << endl;
     visited[start] = true;
 
     int its = 0;
+    bool finish_visited = false;
     while (!queue.empty()) {
-        its ++;
+        its++;
         cur_pos = queue.front();
         queue.pop();
 
@@ -220,10 +255,24 @@ int main() {
                 parent[new_pos] = cur_pos;
                 visited[new_pos] = true;
                 queue.push(new_pos);
+
+                if (new_pos == finish) {
+//                    cout << "done" << endl;
+                    finish_visited = true;
+                    break;
+                }
             }
         }
-    }
 
+        if (finish_visited) {
+            break;
+        }
+    }
+//    cout << "size: " << VP_SIZE << endl;
+//    cout << "its: " << its << endl;
+//    end_timer();
+//    cout << "get path" << endl;
+//    start_timer();
 //
 //    //get path
 //    cout << "getting path" << endl;
@@ -267,12 +316,16 @@ int main() {
         next_pos = parent[cur_pos];
     }
 
+//    end_timer();
+//    cout << "get result" << endl;
+//    start_timer();
     for (int i = 0; i < K; ++i) {
         for (int j = result[i].length() - 1; j >= 0; --j) {
             cout << result[i][j];
         }
         cout << endl;
     }
+//    end_timer();
 
 
     return EXIT_SUCCESS;
