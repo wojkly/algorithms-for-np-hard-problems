@@ -20,15 +20,15 @@ int HW_mul_sqr = 0;
 int D = 0;
 int K = 0;
 
-chrono::time_point<chrono::system_clock, chrono::duration<double>> start;
+chrono::time_point<chrono::system_clock, chrono::duration<double>> start_time;
 
 void start_timer() {
-    start = chrono::system_clock::now();
+    start_time = chrono::system_clock::now();
 }
 
 void end_timer() {
     auto end = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds = end-start;
+    std::chrono::duration<double> elapsed_seconds = end-start_time;
 
     cout << "elapsed time: " << elapsed_seconds.count() << endl;
 }
@@ -59,11 +59,22 @@ int get_index(vector<pair<int, int>> positions) {
     return index;
 }
 
+vector<pair<int, int>> get_possible_moves() {
+    vector<pair<int,int>> possible_moves;
+    possible_moves.emplace_back(0, 0);
+    possible_moves.emplace_back(-1, 0);
+    possible_moves.emplace_back(1, 0);
+    possible_moves.emplace_back(0, -1);
+    possible_moves.emplace_back(0, 1);
+
+    return possible_moves;
+}
+
 vector<pair<int, int>> get_positions(int index) {
     vector<pair<int, int>> positions;
     int p, x, y;
 
-    while (index > 0) {
+    for (int i = 0; i < K; ++i) {
         p = index % HW_mul;
         y = p % width;
         x = p / width;
@@ -71,10 +82,26 @@ vector<pair<int, int>> get_positions(int index) {
         positions.emplace_back(x, y);
         index /= HW_mul;
     }
-    while (positions.size() < K) {
-        positions.emplace_back(0, 0);
-    }
     return positions;
+}
+bool is_passing(vector<pair<int, int>> coords, vector<pair<int, int>> new_coords) {
+    if (D != 0) {
+        return false;
+    } else {
+        for (int i = 0; i < K - 1; ++i) {
+            auto a1 = coords[i];
+            auto a2 = new_coords[i];
+            for (int j = i + 1; j < K; ++j) {
+                auto b1 = coords[j];
+                auto b2 = new_coords[j];
+
+                if (a1 == b2 && b1 == a2) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }
 
 bool is_distance_greater(vector<pair<int, int>> positions) {
@@ -97,14 +124,10 @@ bool is_distance_greater(vector<pair<int, int>> positions) {
 
 vector<int> get_move_combination(int k) {
     vector<int> subset;
-    while (k > 0) {
+    for (int i = 0; i < K; ++i) {
         subset.push_back(k % 5);
         k /= 5;
     }
-    while (subset.size() < K) {
-        subset.push_back(0);
-    }
-
     return subset;
 }
 
@@ -167,6 +190,7 @@ int main() {
                     break;
                 default:
                     board[i][j] = true;
+                    EXIT_FAILURE;
                     break;
             }
         }
@@ -185,16 +209,10 @@ int main() {
     //
     vector<vector<int>> possible_move_combinations;
     possible_move_combinations.reserve(ipow(5, K));
-    for (int i = 0; i< ipow(5, K); ++i) {
+    for (int i = 1; i< ipow(5, K); ++i) {
         possible_move_combinations.push_back(get_move_combination(i));
     }
-
-    pair<int,int> possible_moves[5];
-    possible_moves[0] = pair<int,int>(-1,0);
-    possible_moves[1] = pair<int,int>(1,0);
-    possible_moves[2] = pair<int,int>(0,-1);
-    possible_moves[3] = pair<int,int>(0,1);
-    possible_moves[4] = pair<int,int>(0,0);
+    vector<pair<int,int>> possible_moves = get_possible_moves();
 
 //    end_timer();
 //    cout << "BFS" << endl;
@@ -229,7 +247,6 @@ int main() {
                 new_w = new_coords[i].second;
 
                 if (0 <= new_h && new_h < height && 0 <= new_w && new_w < width && board[new_h][new_w]) {
-                    check_next_combination = false;
                 } else {
                     check_next_combination = true;
                     break;
@@ -241,7 +258,7 @@ int main() {
             }
 
             new_pos = get_index(new_coords);
-            if (parents.find(new_pos) == parents.end() && is_distance_greater(new_coords)) {
+            if (parents.find(new_pos) == parents.end() && !is_passing(coords, new_coords) && is_distance_greater(new_coords)) {
                 parents.emplace(new_pos, cur_pos);
                 queue.push(new_pos);
 
@@ -257,8 +274,7 @@ int main() {
             break;
         }
     }
-//    cout << "size: " << VP_SIZE << endl;
-//    cout << "its: " << its << endl;
+
 //    end_timer();
 //    cout << "get path" << endl;
 //    start_timer();
@@ -296,7 +312,6 @@ int main() {
                     break;
                 default:
                     cout << "wrong move detected";
-                    EXIT_FAILURE;
             }
         }
 
