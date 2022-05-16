@@ -19,6 +19,7 @@ int HW_mul = 0;
 int HW_mul_sqr = 0;
 int D = 0;
 int K = 0;
+int N = 0;
 
 chrono::time_point<chrono::system_clock, chrono::duration<double>> start_time;
 
@@ -134,15 +135,11 @@ vector<int> get_move_combination(int k) {
 int main() {
     string line, tmp;
 
-    cin >> tmp;
-    height = stoi(tmp);
-    cin >> tmp;
-    width = stoi(tmp);
-    cin >> tmp;
-    K = stoi(tmp);
-    cin >> tmp;
-    D = stoi(tmp);
-    cin >> tmp;
+    scanf("%d", &height);
+    scanf("%d", &width);
+    scanf("%d", &K);
+    scanf("%d", &D);
+    scanf("%d", &N);
 //    N = stoi(tmp);
 
 //    cout << "prepare arrays" << endl;
@@ -156,11 +153,13 @@ int main() {
 //    cout << "read input" << endl;
 //    start_timer();
     int start = 0, finish = 0;
+    char field;
 
+    scanf("%c", &field);
     for (int i = 0; i < height; ++i) {
-        cin >> line;
         for (int j = 0; j < width; ++j) {
-            switch (line[j]) {
+            scanf("%c", &field);
+            switch (field) {
                 case '#':
                     board[i][j] = false;
                     break;
@@ -190,10 +189,10 @@ int main() {
                     break;
                 default:
                     board[i][j] = true;
-                    EXIT_FAILURE;
                     break;
             }
         }
+        scanf("%c", &field);
     }
 
     //BFS
